@@ -17,29 +17,32 @@ for _ in range(random.randint(2, 10)):
 print(list_of_dictionaries)
 
 
-# function to merge dictionaries
 def merge_dicts(list_of_dicts):
     result_dict = {}
-    # start iteration over each dict in the list
+    # iterate over each dict in the list
     for idx, d in enumerate(list_of_dicts, start=0):
-        # start iteration over each key-value pair in each dict
+        # iterate over each key-value pair in each dict
         for key, value in d.items():
-            # check if key already exists in merged_dict
+            # check if key already exists in result_dict
             if key in result_dict:
-                # if key exists, compare its value with the current key and
-                # update the value if new value is greater
-                # rename the key with the index, previous key removed
-                if value > result_dict[key]:
-                    result_dict[key] = value
-                    result_dict[key + '_' + str(idx)] = result_dict.pop(key)
-            # if key does not exist, add key-value pair from current dict
+                # if value in current dict is greater, update result_dict
+                if value > result_dict[key][0]:
+                    result_dict[key] = (value, idx)
             else:
-                result_dict[key] = value
-    return result_dict
+                # if key doesn't exist, add key-value pair to result_dict
+                result_dict[key] = (value, idx)
+
+    # compile the final dictionary with renamed keys
+    final_dict = {}
+    for key, (value, idx) in result_dict.items():
+        if idx == 0:
+            final_dict[key] = value
+        else:
+            final_dict[f"{key}_{idx}"] = value
+
+    return final_dict
 
 
-# merge the list of dictionaries
 merged_dict = merge_dicts(list_of_dictionaries)
 
-# print the merged dictionary
 print(merged_dict)
