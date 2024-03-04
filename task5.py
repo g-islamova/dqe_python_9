@@ -5,6 +5,7 @@ class Record:
     """
     Base class for different types of record
     """
+
     def __init__(self, text: str):
         self.text = text
 
@@ -13,6 +14,7 @@ class News(Record):
     """
     Class for news records
     """
+
     def __init__(self, text: str, city: str):
         """
         Initialise a news record
@@ -23,6 +25,14 @@ class News(Record):
         super().__init__(text)
         self.city = city.capitalize()
         self.date = datetime.now().strftime("%d/%m/%Y %H.%M")
+
+    @property
+    def city(self):
+        return self._city
+
+    @city.setter
+    def city(self, value):
+        self._city = value.capitalize()
 
     def publish(self) -> str:
         """
@@ -35,6 +45,7 @@ class PrivateAd(Record):
     """
     Class for private advertisements
     """
+
     def __init__(self, text: str, expiration_date: datetime):
         """
         Initialise a private advertisement record
@@ -58,6 +69,7 @@ class Weather(Record):
     """
     Class for weather records
     """
+
     def __init__(self, city: str, temperature: int):
         """
         Initialise a weather record
@@ -90,6 +102,7 @@ class NewsFeed:
     """
     Class representing a collection of records
     """
+
     def __init__(self):
         self.records = []
 
@@ -174,3 +187,11 @@ if record:
 
 # save news feed to file
 news_feed.save_to_file()
+
+# get city attribute
+# news = News("Some news", "Kaunas")
+# print(news.city)
+
+# set city attribute
+# news.city = "Riga"
+# print(news.city)
