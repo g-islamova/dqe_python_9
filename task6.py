@@ -1,3 +1,10 @@
+"""
+Input format for txt file to be processed:
+For News Record: News|Text|City
+For Private Ad: Private Ad|Text|Expiration Date (dd/mm/yyyy)
+For Weather Record: Weather|City|Temperature
+"""
+
 from datetime import datetime
 import os
 from task6_case_mod import capitalize_first_word, normalize_text
