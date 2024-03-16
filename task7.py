@@ -1,3 +1,10 @@
+"""
+Input format for txt file to be processed:
+For News Record: News|Text|City
+For Private Ad: Private Ad|Text|Expiration Date (dd/mm/yyyy)
+For Weather Record: Weather|City|Temperature
+"""
+
 import csv
 from collections import Counter
 from string import ascii_lowercase
