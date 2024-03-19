@@ -137,7 +137,10 @@ class NewsFeed:
         """
         with open("NewsFeed.txt", "a") as file:
             for record in self.records:
-                file.write(capitalize_first_word(normalize_text(record.publish())) + "\n")
+                if isinstance(record, Weather):
+                    file.write(record.publish())
+                else:
+                    file.write(capitalize_first_word(normalize_text(record.publish())) + "\n")
 
 
 # Function to get user input
