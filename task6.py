@@ -1,13 +1,12 @@
 """
-Input format for txt file to be processed:
-For News Record: News|Text|City
-For Private Ad: Private Ad|Text|Expiration Date (dd/mm/yyyy)
-For Weather Record: Weather|City|Temperature
+NOTE: Before running the script make sure that test file is in the same folder as this script.
+You can find sample text file with records in the branch.
 """
 
 from datetime import datetime
 import os
 from task6_case_mod import capitalize_first_word, normalize_text
+from typing import List
 
 
 class Record:
@@ -47,7 +46,7 @@ class News(Record):
         """
         Publish news record
         """
-        return f"News -------------------------\n{self.text}\n{self.city}, {self.date}\n"
+        return f"\nNews -------------------------\n{self.text}\n{self.city}, {self.date}\n"
 
 
 class PrivateAd(Record):
@@ -71,7 +70,7 @@ class PrivateAd(Record):
         """
         normalized_text = normalize_text(self.text)
         capitalized_text = capitalize_first_word(normalized_text)
-        return (f"Private Ad ------------------\n{capitalized_text}\n"
+        return (f"\nPrivate Ad ------------------\n{capitalized_text}\n"
                 f"Actual until: {self.expiration_date.strftime('%d/%m/%Y')}, "
                 f"{self.days_left} days left\n")
 
@@ -96,7 +95,7 @@ class Weather(Record):
         """
         Publish the notification about the weather
         """
-        message = f"Weather today--------------\n{self.text}\n{self.date}\n"
+        message = f"\nWeather today--------------\n{self.text}\n{self.date}\n"
         if self.temperature < 0:
             message += "It is cold\n"
         elif 0 <= self.temperature <= 15:
@@ -195,47 +194,84 @@ class TxtParser:
         if file_path:
             self.file_path = file_path
         else:
-            self.file_path = r"C:\Users\Guzel_Islamova\Documents\news_file.txt"
+            # Construct a universal default path based on the current working directory
+            self.file_path = os.path.join(os.getcwd(), "news_file.txt")
 
-    def parse_txt(self, news_feed: NewsFeed) -> bool:
+    def read_records(self) -> List[str]:
+        """
+        Read records from the source file
+        :return: List[str]: List of records read from the file
+        """
         try:
             if os.path.exists(self.file_path):
                 with open(self.file_path, "r") as file:
                     records = file.readlines()
                     if not records:
                         print("No records found in the source file.")
-                        return False
-                    else:
-                        for record in records:
-                            try:
-                                record_data = record.strip().split("|")
-                                if len(record_data) >= 3:  # ensure there are enough elements in the record_data
-                                    record_type = record_data[0].strip().lower()
-                                    if record_type == "news":
-                                        news_feed.add_record(News(record_data[1], record_data[2]))
-                                    elif record_type == "private ad":
-                                        expiration_date = datetime.strptime(record_data[2], "%d/%m/%Y")
-                                        news_feed.add_record(PrivateAd(record_data[1], expiration_date))
-                                    elif record_type == "weather":
-                                        news_feed.add_record(Weather(record_data[1], int(record_data[2])))
-                                else:
-                                    print(f"Unknown record type: {record_data[0]}. Skipping.")
-                            except IndexError:
-                                print("Record format is incorrect. Skipping this record.")
-                os.remove(self.file_path)
-                return True
+                        return []
+                    return records
             else:
                 print("Source file not found at the specified path or already deleted.")
-                return False
+                return []
         except FileNotFoundError:
             print("File not found at the specified path.")
-            return False
+            return []
         except IOError:
             print("An error occurred while reading the file.")
-            return False
+            return []
         except Exception as e:
             print(f"An unexpected error occurred: {e}")
+            return []
+
+    def write_records(self, records: List[str]) -> None:
+        """
+        Write records to the file
+        :param records: List of records to be written
+        """
+        with open(self.file_path, "a") as file:
+            for record in records:
+                file.write(record)
+
+    def delete_file(self) -> None:
+        """
+        Delete the source file after processing
+        """
+        try:
+            os.remove(self.file_path)
+        except FileNotFoundError:
+            print("File not found at the specified path.")
+        except Exception as e:
+            print(f"An unexpected error occurred while deleting the file: {e}")
+
+    def parse_txt(self, news_feed: NewsFeed) -> bool:
+        """
+        Parse the source file and add records to the news feed
+        :param news_feed: NewsFeed object to add records to
+        :return: bool: True if parsing is successful, False otherwise
+        """
+        records = self.read_records()
+        if not records:
             return False
+
+        for record in records:
+            try:
+                record_data = record.strip().split("|")
+                if len(record_data) >= 3:  # ensure there are enough elements in the record_data
+                    record_type = record_data[0].strip().lower()
+                    if record_type == "news":
+                        news_feed.add_record(News(record_data[1], record_data[2]))
+                    elif record_type == "private ad":
+                        expiration_date = datetime.strptime(record_data[2], "%d/%m/%Y")
+                        news_feed.add_record(PrivateAd(record_data[1], expiration_date))
+                    elif record_type == "weather":
+                        news_feed.add_record(Weather(record_data[1], int(record_data[2])))
+                else:
+                    print(f"Unknown record type: {record_data[0]}. Skipping.")
+            except IndexError:
+                print("Record format is incorrect. Skipping this record.")
+
+        self.delete_file()
+        return True
 
 
 def main():
