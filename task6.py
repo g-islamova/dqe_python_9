@@ -195,7 +195,8 @@ class TxtParser:
             self.file_path = file_path
         else:
             # Construct a universal default path based on the current working directory
-            self.file_path = os.path.join(os.getcwd(), "news_file.txt")
+            script_dir = os.path.dirname(os.path.abspath(__file__))
+            self.file_path = os.path.join(script_dir, "news_file.txt")
 
     def read_records(self) -> List[str]:
         """
@@ -275,7 +276,7 @@ class TxtParser:
 
 
 def main():
-    default_file_path = r"C:\Users\Guzel_Islamova\Documents\news_file.txt"
+    default_file_path = os.path.join(os.getcwd(), "news_file.txt")
     news_feed = NewsFeed()
 
     while True:
