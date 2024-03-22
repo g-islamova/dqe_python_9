@@ -126,7 +126,6 @@ class NewsFeed:
         Add a record to the news feed
         """
         self.records.append(record)
-        # count words and letters
         self.count_words(record.text)
         self.count_letters(record.text)
 
@@ -144,7 +143,6 @@ class NewsFeed:
         """
         text_lower = text.lower()
         self.total_letters = sum(1 for char in text_lower if char.isalpha())
-        print(f"Hello I am total from count_letters {self.total_letters}")
 
         for char in text:
             if char.isalpha():  # consider only alphabetic characters
@@ -153,8 +151,6 @@ class NewsFeed:
                 self.letter_counts[char_lower] = self.letter_counts.get(char_lower, 0) + 1
                 if char.isupper():
                     self.total_uppercase_letters[char_lower] = self.total_uppercase_letters.get(char_lower, 0) + 1
-                print(f"DEBUG: I am a count from self.letter_counts: {self.letter_counts}")
-                print(f"DEBUG: I am a self.total_uppercase_letters: {self.total_uppercase_letters}")
 
     def save_cnt_words(self, filename):
         with open(filename, 'w', newline="") as csvfile:
@@ -175,7 +171,6 @@ class NewsFeed:
             for letter, total_count in self.letter_counts.items():
                 total_percentage = (total_count / self.total_letters) * 100 if self.total_letters > 0 else 0
                 uppercase_count = self.total_uppercase_letters.get(letter, 0)
-                print(f"I am a uppercase letter from save_cnt: {uppercase_count}")
                 writer.writerow({
                     "letter": letter,
                     "count_all": total_count,
