@@ -1,16 +1,14 @@
 """
-Input format for txt file to be processed:
-For News Record: News|Text|City
-For Private Ad: Private Ad|Text|Expiration Date (dd/mm/yyyy)
-For Weather Record: Weather|City|Temperature
+NOTE: Before running the script make sure that test file is in the same folder as this script.
+You can find sample text file with records in the branch.
 """
 
 import csv
 from collections import Counter
-from string import ascii_lowercase
 from datetime import datetime
 import os
 from task6_case_mod import capitalize_first_word, normalize_text
+from typing import List
 
 
 class Record:
@@ -121,6 +119,7 @@ class NewsFeed:
         self.word_counts: Counter = Counter()
         self.letter_counts: Counter = Counter()
         self.total_letters = 0
+        self.total_uppercase_letters: dict = {}  # Initialize as an empty dictionary
 
     def add_record(self, record: Record) -> None:
         """
@@ -141,12 +140,21 @@ class NewsFeed:
     def count_letters(self, text):
         """
         Count letters in the text and update letter counts
-        :param text:
-        :return:
+        :param text: Text to count letters from
         """
-        text = text.replace(" ", "").replace("\n", "")  # remove spaces
-        self.total_letters += len(text)
-        self.letter_counts.update(text)
+        text_lower = text.lower()
+        self.total_letters = sum(1 for char in text_lower if char.isalpha())
+        print(f"Hello I am total from count_letters {self.total_letters}")
+
+        for char in text:
+            if char.isalpha():  # consider only alphabetic characters
+                # count all letters lower and upper
+                char_lower = char.lower()
+                self.letter_counts[char_lower] = self.letter_counts.get(char_lower, 0) + 1
+                if char.isupper():
+                    self.total_uppercase_letters[char_lower] = self.total_uppercase_letters.get(char_lower, 0) + 1
+                print(f"DEBUG: I am a count from self.letter_counts: {self.letter_counts}")
+                print(f"DEBUG: I am a self.total_uppercase_letters: {self.total_uppercase_letters}")
 
     def save_cnt_words(self, filename):
         with open(filename, 'w', newline="") as csvfile:
@@ -155,19 +163,24 @@ class NewsFeed:
                 writer.writerow([word, count])
 
     def save_cnt_letters(self, filename):
+        """
+        Save letter counts to a CSV file
+        :param filename: Name of the CSV file
+        """
         with open(filename, 'w', newline='') as csvfile:
             headers = ["letter", "count_all", "count_uppercase", "percentage"]
             writer = csv.DictWriter(csvfile, fieldnames=headers)
             writer.writeheader()
-            for letter in ascii_lowercase:
-                total_count = self.letter_counts[letter] + self.word_counts[letter.upper()]
-                uppercase_count = self.letter_counts[letter.upper()]
-                percentage = (total_count / self.total_letters) * 100 if self.total_letters > 0 else 0
+
+            for letter, total_count in self.letter_counts.items():
+                total_percentage = (total_count / self.total_letters) * 100 if self.total_letters > 0 else 0
+                uppercase_count = self.total_uppercase_letters.get(letter, 0)
+                print(f"I am a uppercase letter from save_cnt: {uppercase_count}")
                 writer.writerow({
                     "letter": letter,
                     "count_all": total_count,
                     "count_uppercase": uppercase_count,
-                    "percentage": f"{percentage:.2f}%"
+                    "percentage": f"{total_percentage:.2f}%"
                 })
 
     def publish_feed(self) -> str:
@@ -243,51 +256,89 @@ class TxtParser:
         if file_path:
             self.file_path = file_path
         else:
-            self.file_path = r"C:\Users\Guzel_Islamova\Documents\news_file.txt"
+            # Construct a universal default path based on the current working directory
+            script_dir = os.path.dirname(os.path.abspath(__file__))
+            self.file_path = os.path.join(script_dir, "news_file.txt")
 
-    def parse_txt(self, news_feed: NewsFeed) -> bool:
+    def read_records(self) -> List[str]:
+        """
+        Read records from the source file
+        :return: List[str]: List of records read from the file
+        """
         try:
             if os.path.exists(self.file_path):
                 with open(self.file_path, "r") as file:
                     records = file.readlines()
                     if not records:
                         print("No records found in the source file.")
-                        return False
-                    else:
-                        for record in records:
-                            try:
-                                record_data = record.strip().split("|")
-                                if len(record_data) >= 3:  # ensure there are enough elements in the record_data
-                                    record_type = record_data[0].strip().lower()
-                                    if record_type == "news":
-                                        news_feed.add_record(News(record_data[1], record_data[2]))
-                                    elif record_type == "private ad":
-                                        expiration_date = datetime.strptime(record_data[2], "%d/%m/%Y")
-                                        news_feed.add_record(PrivateAd(record_data[1], expiration_date))
-                                    elif record_type == "weather":
-                                        news_feed.add_record(Weather(record_data[1], int(record_data[2])))
-                                else:
-                                    print(f"Unknown record type: {record_data[0]}. Skipping.")
-                            except IndexError:
-                                print("Record format is incorrect. Skipping this record.")
-                os.remove(self.file_path)
-                return True
+                        return []
+                    return records
             else:
                 print("Source file not found at the specified path or already deleted.")
-                return False
+                return []
         except FileNotFoundError:
             print("File not found at the specified path.")
-            return False
+            return []
         except IOError:
             print("An error occurred while reading the file.")
-            return False
+            return []
         except Exception as e:
             print(f"An unexpected error occurred: {e}")
+            return []
+
+    def write_records(self, records: List[str]) -> None:
+        """
+        Write records to the file
+        :param records: List of records to be written
+        """
+        with open(self.file_path, "a") as file:
+            for record in records:
+                file.write(record)
+
+    def delete_file(self) -> None:
+        """
+        Delete the source file after processing
+        """
+        try:
+            os.remove(self.file_path)
+        except FileNotFoundError:
+            print("File not found at the specified path.")
+        except Exception as e:
+            print(f"An unexpected error occurred while deleting the file: {e}")
+
+    def parse_txt(self, news_feed: NewsFeed) -> bool:
+        """
+        Parse the source file and add records to the news feed
+        :param news_feed: NewsFeed object to add records to
+        :return: bool: True if parsing is successful, False otherwise
+        """
+        records = self.read_records()
+        if not records:
             return False
+
+        for record in records:
+            try:
+                record_data = record.strip().split("|")
+                if len(record_data) >= 3:  # ensure there are enough elements in the record_data
+                    record_type = record_data[0].strip().lower()
+                    if record_type == "news":
+                        news_feed.add_record(News(record_data[1], record_data[2]))
+                    elif record_type == "private ad":
+                        expiration_date = datetime.strptime(record_data[2], "%d/%m/%Y")
+                        news_feed.add_record(PrivateAd(record_data[1], expiration_date))
+                    elif record_type == "weather":
+                        news_feed.add_record(Weather(record_data[1], int(record_data[2])))
+                else:
+                    print(f"Unknown record type: {record_data[0]}. Skipping.")
+            except IndexError:
+                print("Record format is incorrect. Skipping this record.")
+
+        self.delete_file()
+        return True
 
 
 def main():
-    default_file_path = r"C:\Users\Guzel_Islamova\Documents\news_file.txt"
+    default_file_path = os.path.join(os.getcwd(), "news_file.txt")
     news_feed = NewsFeed()
 
     while True:
