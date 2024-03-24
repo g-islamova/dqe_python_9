@@ -1,4 +1,7 @@
 """
+NOTE: Before running the script make sure that test file is in the folder named "xml_fies"
+and that folder is placed in the same folder as this script.
+You can find sample xml file with records in the branch.
 """
 
 import csv
