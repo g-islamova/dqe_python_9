@@ -370,7 +370,6 @@ class JsonParser:
                                 records.extend(data)
                             else:
                                 print("Invalid JSON format in file:", file_name)
-                        os.remove(os.path.join(self.folder_path, file_name))
                 return records
             else:
                 print("Folder not found at the specified path.")
@@ -497,6 +496,9 @@ def main():
                     if success:
                         news_feed.save_to_file()
                         print("Records added from JSON files successfully.")
+                        for file_name in os.listdir(folder_path):
+                            if file_name.endswith('.json'):
+                                json_parser.delete_file(file_name)
                     else:
                         print("No records added from JSON files.")
             elif choice == 3:
