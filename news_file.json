@@ -1,0 +1,17 @@
+[
+  {
+  "type": "news",
+  "text": "someThing happeNEd",
+  "city": "ciTY"
+},
+{
+  "type": "private ad",
+  "text": "seLLinG soME staff",
+  "expiration_date": "01/01/2025"
+},
+{
+  "type": "weather",
+  "city": "Klaipeda",
+  "temperature": 5
+}
+]
