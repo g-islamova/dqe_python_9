@@ -1,0 +1,17 @@
+<records>
+<record>
+<type>news</type>
+<text>someThing aWesome happeNEd</text>
+<city>ciTy</city>
+</record>
+<record>
+<type>private ad</type>
+<text>selliNG some inteReStiNG staFF</text>
+<expiration_date>01/01/2030</expiration_date>
+</record>
+<record>
+<type>weather</type>
+<city>palanga</city>
+<temperature>5</temperature>
+</record>
+</records>
