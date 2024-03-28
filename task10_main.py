@@ -549,21 +549,21 @@ class DatabaseManager:
 
     def save_record(self, record):
         try:
-            connection = pyodbc.connect(self.connection_string)
-            cursor = connection.cursor()
+            with pyodbc.connect(self.connection_string) as connection:
+                with connection.cursor() as cursor:
 
-            if isinstance(record, News):
-                cursor.execute("INSERT INTO news (city, text) VALUES (?, ?)",
-                               capitalize_first_word(normalize_text(record.city)),
-                               capitalize_first_word(normalize_text(record.text)))
-            elif isinstance(record, PrivateAd):
-                cursor.execute("INSERT INTO ads (text, expiration_date) VALUES (?, ?)",
-                               capitalize_first_word(normalize_text(record.text)),
-                               record.expiration_date)
-            elif isinstance(record, Weather):
-                cursor.execute("INSERT INTO weather (city, temperature) VALUES (?, ?)",
-                               capitalize_first_word(normalize_text(record.city)),
-                               record.temperature)
+                    if isinstance(record, News):
+                        cursor.execute("INSERT INTO news (city, text) VALUES (?, ?)",
+                                       capitalize_first_word(normalize_text(record.city)),
+                                       capitalize_first_word(normalize_text(record.text)))
+                    elif isinstance(record, PrivateAd):
+                        cursor.execute("INSERT INTO ads (text, expiration_date) VALUES (?, ?)",
+                                       capitalize_first_word(normalize_text(record.text)),
+                                       record.expiration_date)
+                    elif isinstance(record, Weather):
+                        cursor.execute("INSERT INTO weather (city, temperature) VALUES (?, ?)",
+                                       capitalize_first_word(normalize_text(record.city)),
+                                       record.temperature)
 
             connection.commit()
             print("Record saved to database successfully.")
