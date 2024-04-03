@@ -1,8 +1,15 @@
 import pyodbc
 from math import radians, sin, cos, sqrt, atan2
+from typing import Union, Tuple, Optional
 
 
-def get_coordinates(city):
+def get_coordinates(city: str) -> Optional[Union[Tuple[float, float], None, pyodbc.Row]]:
+    """
+    Retrieve latitude and longitude coordinates for a given city from the database.
+
+    :param city: The name of the city
+    :return: A tuple containing latitude and longitude coordinates if found.
+    """
     try:
         with pyodbc.connect('DRIVER={SQLite3 ODBC Driver};'
                             'SERVER=localhost;'
@@ -33,13 +40,31 @@ def get_coordinates(city):
     except Exception as e:
         print(f"An error occurred: {e}")
 
+        # Return None if no coordinates were found
+        return None
 
-def calculate_distance(coord1, coord2):
+
+def calculate_distance(coord1: Tuple[float, float], coord2: Tuple[float, float]) -> float:
+    """
+    Calculate the straight-line distance between two sets of latitude and longitude coordinates
+    using the Haversine formula.
+
+    Variables used in Haversine formula:
+    R - the radius of the Earth in km (constant value)
+    a - square of half the great circle distance between the two points; intermediate value
+    c - angular distance in radians on the sphere
+
+
+    :param coord1: The latitude and longitude coordinates of the first city.
+    :param coord2: The latitude and longitude coordinates of the second city.
+    :return: The straight-line distance between the two cities in kilometers.
+    """
     R = 6371.0
 
     lat1, lon1 = radians(coord1[0]), radians(coord1[1])
     lat2, lon2 = radians(coord2[0]), radians(coord2[1])
 
+    # calculate the difference in longitude and latitude between two cities
     dlon = lon2 - lon1
     dlat = lat2 - lat1
 
@@ -50,7 +75,10 @@ def calculate_distance(coord1, coord2):
     return distance
 
 
-def main():
+def main() -> None:
+    """
+    Main function to calculate the distance between two cities based on their coordinates.
+    """
     while True:
         city1 = input("Enter first city name: ")
         if not city1:
